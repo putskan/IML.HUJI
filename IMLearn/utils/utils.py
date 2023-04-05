@@ -33,7 +33,13 @@ def split_train_test(X: pd.DataFrame, y: pd.Series, train_proportion: float = .7
         Responses of test samples
 
     """
-    raise NotImplementedError()
+    n_samples = len(X)
+    perm = np.random.permutation(np.arange(n_samples))
+    train_test_threshold = int(n_samples * train_proportion) # TODO: is that what they want? floor down?
+    train_indices = perm[:train_test_threshold]
+    test_indices = perm[train_test_threshold:]
+    return X.iloc[train_indices], y.iloc[train_indices], \
+           X.iloc[test_indices], y.iloc[test_indices],
 
 
 def confusion_matrix(a: np.ndarray, b: np.ndarray) -> np.ndarray:
