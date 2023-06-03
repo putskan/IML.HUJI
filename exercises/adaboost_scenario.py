@@ -46,12 +46,12 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     # TODO: how is it noiseless if noise is used above?
 
     model = AdaBoost(DecisionStump, n_learners).fit(train_X, train_y)
-    train_loss = np.empty(n_learners - 1)
-    test_loss = np.empty(n_learners - 1)
-    t_values = np.arange(1, n_learners)
+    train_loss = []
+    test_loss = []
+    t_values = np.arange(1, n_learners + 1)
     for t in t_values:
-        train_loss[t - 1] = model.partial_loss(train_X, train_y, t)
-        test_loss[t - 1] = model.partial_loss(test_X, test_y, t)
+        train_loss.append(model.partial_loss(train_X, train_y, t))
+        test_loss.append(model.partial_loss(test_X, test_y, t))
 
     go.Figure([
         go.Scatter(x=t_values, y=train_loss),
@@ -97,12 +97,13 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig.show()
 
     # Question 3: Decision surface of best performing ensemble
-    losses = [model.partial_loss(test_X, test_y, t) for t in range(1, n_learners)]
-    best_t = np.argmin(losses)
-    best_t_acc = 1 - losses[best_t]
+    losses = [model.partial_loss(test_X, test_y, t) for t in range(1, n_learners + 1)]
+    best_loss_idx = np.argmin(losses)
+    best_t = best_loss_idx + 1
+    best_t_acc = 1 - losses[best_loss_idx]
 
     fig = go.Figure()
-    fig.add_trace(decision_surface(lambda X: model.partial_predict(X, t),
+    fig.add_trace(decision_surface(lambda X: model.partial_predict(X, best_t),
                                 xrange=lims[0], yrange=lims[1],
                                 showscale=False),
                   )
@@ -115,7 +116,8 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                   )
     fig.update_layout(
         margin=dict(t=80, b=50),
-        title_text=f'Best model - ensemble size: {best_t}, accuracy: {best_t_acc}'
+        title_text=f'Best model - ensemble size: {best_t}, '
+                   f'accuracy: {best_t_acc}'
     )
     fig.update_xaxes(title_text="feature 1")
     fig.update_yaxes(title_text="feature 2")
