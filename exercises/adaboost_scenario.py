@@ -122,7 +122,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig.show()
 
     # Question 4: Decision surface with weighted samples
-    marker_size = model.D_[-1] / np.max(model.D_[-1]) * 5
+    marker_size = model.D_[-1] / np.max(model.D_[-1]) * 5  # TODO: is seems slightly different... even on x20
     fig = go.Figure()
     fig.add_trace(decision_surface(lambda X: model.predict(X),
                                 xrange=lims[0], yrange=lims[1],
@@ -145,6 +145,8 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
 
 
     raise NotImplementedError()
+
+# TODO: color is opposite to them, is it a bug?
 
 
 if __name__ == '__main__':
