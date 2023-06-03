@@ -114,7 +114,7 @@ class DecisionStump(BaseEstimator):
         """
         sorted_indexes = np.argsort(values)
         values = values[sorted_indexes]
-        labels = labels[sorted_indexes]
+        labels = labels[sorted_indexes] * sign
 
         indexes = np.arange(len(labels))
         cumsum = np.cumsum(labels)
@@ -127,9 +127,6 @@ class DecisionStump(BaseEstimator):
         threshold_errors = (ones_pre_threshold + minus_ones_post_threshold) / len(labels)
         best_thr_idx = np.argmin(threshold_errors)
         return values[best_thr_idx], threshold_errors[best_thr_idx]
-
-        # TODO: ADD SIGN
-
 
 
         # TODO: make sure all integers ^

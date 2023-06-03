@@ -57,20 +57,37 @@ class AdaBoost(BaseEstimator):
             Responses of input data to fit to
         """
 
+        # self.models_, self.weights_, self.D_ = [], np.zeros(self.iterations_), np.ones(len(y), dtype=np.float64) / len(y)
+        # for i in range(0, self.iterations_):
+        #     # Fit a new weak learner on given data, weighted according to current distribution
+        #     self.models_.append(self.wl_().fit(X, y * self.D_))
+        #
+        #     # Calculate learner's weight
+        #     y_pred = self.models_[-1].predict(X)
+        #     epsilon = np.sum(self.D_[y != y_pred])
+        #     self.weights_[i] = .5 * np.log(1. / epsilon - 1)
+        #
+        #     # Adjust samples' distribution
+        #     self.D_ *= np.exp(-y_pred * y * self.weights_[i])
+        #     self.D_ /= np.sum(self.D_)
+        #
+
 
         self.models_, self.weights_, self.D_ = [], [], []
         curr_d = np.ones_like(y) / len(y)
         for i in range(self.iterations_):
-            print('iter', i)
-            sample_indexes = np.random.choice(np.arange(len(y)), len(y), p=curr_d)
-            self.models_.append(self.wl_().fit(X[sample_indexes], y[sample_indexes]))
+            # TODO: delete v
+            # sample_indexes = np.random.choice(np.arange(len(y)), len(y), p=curr_d)
+            # self.models_.append(self.wl_().fit(X[sample_indexes], y[sample_indexes]))
+            self.models_.append(self.wl_().fit(X, y * curr_d))
+
             predictions = self.models_[i].predict(X)
             eps = np.sum(curr_d * (predictions != y))
             self.weights_.append(0.5 * np.log(1 / eps - 1))
             curr_d = curr_d * np.exp(-self.weights_[i] * y * predictions)
             curr_d /= curr_d.sum()
             self.D_.append(curr_d)
-
+            # TODO: what should be saved in D_?
             # TODO: mine is relatively slower. understand why
 
     def _predict(self, X):

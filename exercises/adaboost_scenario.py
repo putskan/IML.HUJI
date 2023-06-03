@@ -43,31 +43,82 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
 
     # Question 1: Train- and test errors of AdaBoost in noiseless case
 
-    print('there')  # TODO: delete
+    # TODO: how is it noiseless if noise is used above?
+
     model = AdaBoost(DecisionStump, n_learners).fit(train_X, train_y)
     train_loss = np.empty(n_learners)
     test_loss = np.empty(n_learners)
     for t in range(n_learners):
-        print(t)  # TODO: DELETE
-        train_loss[t] = model.loss(train_X, train_y)
-        test_loss[t] = model.loss(test_X, test_y)
+        train_loss[t] = model.partial_loss(train_X, train_y, t)
+        test_loss[t] = model.partial_loss(test_X, test_y, t)
 
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(y=train_loss, labels=dict(y='train loss')))
-    fig.add_trace(go.Scatter(y=test_loss, labels=dict(y='test loss')))
-    fig.show()
+    go.Figure([
+        go.Scatter(y=train_loss),
+        go.Scatter(y=test_loss),
+    ]).show()
 
     # TODO: add meaningful axis, labels, etc
 
-    raise NotImplementedError()
 
     # Question 2: Plotting decision surfaces
     T = [5, 50, 100, 250]
     lims = np.array([np.r_[train_X, test_X].min(axis=0), np.r_[train_X, test_X].max(axis=0)]).T + np.array([-.1, .1])
-    raise NotImplementedError()
+
+    fig = make_subplots(rows=2, cols=2,
+                        subplot_titles=([f'T={t}' for t in T]),
+                        )
+
+    markers = np.array(['circle', 'x'])
+
+    for i, t in enumerate(T):
+        fig.add_trace(decision_surface(lambda X: model.partial_predict(X, t),
+                                    xrange=lims[0], yrange=lims[1],
+                                    showscale=False),
+                      row=i // 2 + 1, col=i % 2 + 1,
+                      )
+
+        fig.add_trace(go.Scatter(x=test_X[:, 0], y=test_X[:, 1],
+                                 mode="markers",
+                                  marker_color='black',
+                                  marker_symbol=markers[(test_y > 0).astype(int)],
+                                  marker_size=6),
+                      row=i // 2 + 1, col=i % 2 + 1,
+                      )
+    fig.update_layout(
+        margin=dict(t=80, b=50),
+        title_text='Test set & decision boundaries per ensemble size T',
+        height=1000, width=1000,
+    )
+    fig.update_xaxes(title_text="feature 1")
+    fig.update_yaxes(title_text="feature 2")
+    fig.show()
 
     # Question 3: Decision surface of best performing ensemble
-    raise NotImplementedError()
+
+    # TODO: is it among T = [5 ...] or among all?
+    losses = [model.partial_loss(test_X, test_y, t) for t in range(n_learners)]
+    best_t = np.argmin(losses)
+    best_t_acc = 1 - losses[best_t]
+
+    fig = go.Figure()
+    fig.add_trace(decision_surface(lambda X: model.partial_predict(X, t),
+                                xrange=lims[0], yrange=lims[1],
+                                showscale=False),
+                  )
+
+    fig.add_trace(go.Scatter(x=test_X[:, 0], y=test_X[:, 1],
+                             mode="markers",
+                              marker_color='black',
+                              marker_symbol=markers[(test_y > 0).astype(int)],
+                              marker_size=6),
+                  )
+    fig.update_layout(
+        margin=dict(t=80, b=50),
+        title_text=f'Best model - ensemble size: {best_t}, accuracy: {best_t_acc}'
+    )
+    fig.update_xaxes(title_text="feature 1")
+    fig.update_yaxes(title_text="feature 2")
+    fig.show()
 
     # Question 4: Decision surface with weighted samples
     raise NotImplementedError()
@@ -77,4 +128,4 @@ if __name__ == '__main__':
     np.random.seed(0)
 
     # TODO: change
-    fit_and_evaluate_adaboost(0.1)
+    fit_and_evaluate_adaboost(0.)
