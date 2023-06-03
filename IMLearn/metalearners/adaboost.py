@@ -77,9 +77,9 @@ class AdaBoost(BaseEstimator):
         curr_d = np.ones_like(y) / len(y)
         for i in range(self.iterations_):
             # TODO: delete v
-            # sample_indexes = np.random.choice(np.arange(len(y)), len(y), p=curr_d)
-            # self.models_.append(self.wl_().fit(X[sample_indexes], y[sample_indexes]))
-            self.models_.append(self.wl_().fit(X, y * curr_d))
+            sample_indexes = np.random.choice(np.arange(len(y)), len(y), p=curr_d)
+            self.models_.append(self.wl_().fit(X[sample_indexes], y[sample_indexes]))
+            # self.models_.append(self.wl_().fit(X, y * curr_d))  # TODO: change to this
 
             predictions = self.models_[i].predict(X)
             eps = np.sum(curr_d * (predictions != y))

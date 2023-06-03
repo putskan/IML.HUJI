@@ -60,8 +60,6 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
 
     # TODO: add meaningful axis, labels, etc
 
-    # TODO: stopped: 237 instad of 238, red stipe at bottom
-
 
     # Question 2: Plotting decision surfaces
     T = [5, 50, 100, 250]
@@ -124,6 +122,28 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig.show()
 
     # Question 4: Decision surface with weighted samples
+    marker_size = model.D_[-1] / np.max(model.D_[-1]) * 5
+    fig = go.Figure()
+    fig.add_trace(decision_surface(lambda X: model.predict(X),
+                                xrange=lims[0], yrange=lims[1],
+                                showscale=False),
+                  )
+
+    fig.add_trace(go.Scatter(x=train_X[:, 0], y=train_X[:, 1],
+                             mode="markers",
+                              marker_color='black',
+                              marker_symbol=markers[(test_y > 0).astype(int)],
+                              marker_size=marker_size),
+                  )
+    fig.update_layout(
+        margin=dict(t=80, b=50),
+        title_text=f'Weighted train set (by final D) & model decision boundary'
+    )
+    fig.update_xaxes(title_text="feature 1")
+    fig.update_yaxes(title_text="feature 2")
+    fig.show()
+
+
     raise NotImplementedError()
 
 

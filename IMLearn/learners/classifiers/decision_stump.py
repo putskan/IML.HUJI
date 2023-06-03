@@ -126,6 +126,8 @@ class DecisionStump(BaseEstimator):
 
         threshold_errors = (ones_pre_threshold + minus_ones_post_threshold) / len(labels)
         best_thr_idx = np.argmin(threshold_errors)
+        values[0] = -np.inf
+        values[-1] = np.inf  # TODO: understand if I need to add AFTER, and not like I did
         return values[best_thr_idx], threshold_errors[best_thr_idx]
 
 
@@ -142,7 +144,7 @@ class DecisionStump(BaseEstimator):
         # TODO: space complexity is rather big. change?
         # TODO: why is "product" imported
         # TODO: stopped here, it's slow. use cumsum somehow
-        # TODO: should i put a threshold after/before all of them as well? (like not putting at all)
+        # ***TODO: should i put a threshold after all of them as well?***
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
