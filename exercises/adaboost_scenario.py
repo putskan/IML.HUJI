@@ -42,6 +42,23 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     (train_X, train_y), (test_X, test_y) = generate_data(train_size, noise), generate_data(test_size, noise)
 
     # Question 1: Train- and test errors of AdaBoost in noiseless case
+
+    print('there')  # TODO: delete
+    model = AdaBoost(DecisionStump, n_learners).fit(train_X, train_y)
+    train_loss = np.empty(n_learners)
+    test_loss = np.empty(n_learners)
+    for t in range(n_learners):
+        print(t)  # TODO: DELETE
+        train_loss[t] = model.loss(train_X, train_y)
+        test_loss[t] = model.loss(test_X, test_y)
+
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(y=train_loss, labels=dict(y='train loss')))
+    fig.add_trace(go.Scatter(y=test_loss, labels=dict(y='test loss')))
+    fig.show()
+
+    # TODO: add meaningful axis, labels, etc
+
     raise NotImplementedError()
 
     # Question 2: Plotting decision surfaces
@@ -58,4 +75,6 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
 
 if __name__ == '__main__':
     np.random.seed(0)
-    raise NotImplementedError()
+
+    # TODO: change
+    fit_and_evaluate_adaboost(0.1)

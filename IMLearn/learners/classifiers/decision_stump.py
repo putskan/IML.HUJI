@@ -20,6 +20,7 @@ class DecisionStump(BaseEstimator):
     self.sign_: int
         The label to predict for samples where the value of the j'th feature is about the threshold
     """
+
     def __init__(self) -> DecisionStump:
         """
         Instantiate a Decision stump classifier
@@ -39,7 +40,22 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        best_thr = None
+        best_thr_err = float('inf')
+        best_thr_sign = None
+        best_thr_feature_idx = None
+
+        for feature_idx in range(X.shape[1]):
+            (best_thr, best_thr_err), best_thr_sign, best_thr_feature_idx = \
+                min([
+                    (self._find_threshold(X[:, feature_idx], y, 1), 1, feature_idx),
+                    (self._find_threshold(X[:, feature_idx], y, -1), -1, feature_idx),
+                    ((best_thr, best_thr_err), best_thr_sign, best_thr_feature_idx),
+                ], key=lambda x: x[0][1])
+
+        self.threshold_ = best_thr
+        self.j_ = best_thr_feature_idx
+        self.sign_ = best_thr_sign
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -63,9 +79,10 @@ class DecisionStump(BaseEstimator):
         Feature values strictly below threshold are predicted as `-sign` whereas values which equal
         to or above the threshold are predicted as `sign`
         """
-        raise NotImplementedError()
+        return ((X[:, self.j_] >= self.threshold_) * 2 - 1) * self.sign_
 
-    def _find_threshold(self, values: np.ndarray, labels: np.ndarray, sign: int) -> Tuple[float, float]:
+    def _find_threshold(self, values: np.ndarray, labels: np.ndarray,
+                        sign: int) -> Tuple[float, float]:
         """
         Given a feature vector and labels, find a threshold by which to perform a split
         The threshold is found according to the value minimizing the misclassification
@@ -95,7 +112,40 @@ class DecisionStump(BaseEstimator):
         For every tested threshold, values strictly below threshold are predicted as `-sign` whereas values
         which equal to or above the threshold are predicted as `sign`
         """
-        raise NotImplementedError()
+        sorted_indexes = np.argsort(values)
+        values = values[sorted_indexes]
+        labels = labels[sorted_indexes]
+
+        indexes = np.arange(len(labels))
+        cumsum = np.cumsum(labels)
+        # minus labels, to exclude threshold idx itself
+        ones_pre_threshold = (indexes + cumsum - labels) / 2
+        minus_ones_pre_threshold = indexes - ones_pre_threshold
+        total_minus_ones = (len(labels) - cumsum[-1]) / 2
+        minus_ones_post_threshold = total_minus_ones - minus_ones_pre_threshold
+
+        threshold_errors = (ones_pre_threshold + minus_ones_post_threshold) / len(labels)
+        best_thr_idx = np.argmin(threshold_errors)
+        return values[best_thr_idx], threshold_errors[best_thr_idx]
+
+        # TODO: ADD SIGN
+
+
+
+        # TODO: make sure all integers ^
+
+
+        # TODO: delete v
+        # labels_per_threshold = sign * (
+        #             (values >= values[:, np.newaxis]) * 2 - 1)
+        # threshold_errors = (labels_per_threshold != labels).mean(axis=1)
+        # thr_idx = np.argmin(threshold_errors)
+        # return values[thr_idx], threshold_errors[thr_idx]
+
+        # TODO: space complexity is rather big. change?
+        # TODO: why is "product" imported
+        # TODO: stopped here, it's slow. use cumsum somehow
+        # TODO: should i put a threshold after/before all of them as well? (like not putting at all)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -114,4 +164,5 @@ class DecisionStump(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        from ...metrics import misclassification_error
+        return misclassification_error(y, self.predict(X))
