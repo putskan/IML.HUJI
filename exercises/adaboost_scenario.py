@@ -46,18 +46,21 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     # TODO: how is it noiseless if noise is used above?
 
     model = AdaBoost(DecisionStump, n_learners).fit(train_X, train_y)
-    train_loss = np.empty(n_learners)
-    test_loss = np.empty(n_learners)
-    for t in range(n_learners):
-        train_loss[t] = model.partial_loss(train_X, train_y, t)
-        test_loss[t] = model.partial_loss(test_X, test_y, t)
+    train_loss = np.empty(n_learners - 1)
+    test_loss = np.empty(n_learners - 1)
+    t_values = np.arange(1, n_learners)
+    for t in t_values:
+        train_loss[t - 1] = model.partial_loss(train_X, train_y, t)
+        test_loss[t - 1] = model.partial_loss(test_X, test_y, t)
 
     go.Figure([
-        go.Scatter(y=train_loss),
-        go.Scatter(y=test_loss),
+        go.Scatter(x=t_values, y=train_loss),
+        go.Scatter(x=t_values, y=test_loss),
     ]).show()
 
     # TODO: add meaningful axis, labels, etc
+
+    # TODO: stopped: 237 instad of 238, red stipe at bottom
 
 
     # Question 2: Plotting decision surfaces
@@ -78,7 +81,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                       )
 
         fig.add_trace(go.Scatter(x=test_X[:, 0], y=test_X[:, 1],
-                                 mode="markers",
+                                 mode='markers',
                                   marker_color='black',
                                   marker_symbol=markers[(test_y > 0).astype(int)],
                                   marker_size=6),
@@ -94,9 +97,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig.show()
 
     # Question 3: Decision surface of best performing ensemble
-
-    # TODO: is it among T = [5 ...] or among all?
-    losses = [model.partial_loss(test_X, test_y, t) for t in range(n_learners)]
+    losses = [model.partial_loss(test_X, test_y, t) for t in range(1, n_learners)]
     best_t = np.argmin(losses)
     best_t_acc = 1 - losses[best_t]
 
