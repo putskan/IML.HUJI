@@ -127,23 +127,8 @@ class DecisionStump(BaseEstimator):
         threshold_errors = (ones_pre_threshold + minus_ones_post_threshold) / len(labels)
         best_thr_idx = np.argmin(threshold_errors)
         values[0] = -np.inf
-        values[-1] = np.inf  # TODO: understand if I need to add AFTER, and not like I did
         return values[best_thr_idx], threshold_errors[best_thr_idx]
 
-
-        # TODO: make sure all integers ^
-
-
-        # TODO: delete v
-        # labels_per_threshold = sign * (
-        #             (values >= values[:, np.newaxis]) * 2 - 1)
-        # threshold_errors = (labels_per_threshold != labels).mean(axis=1)
-        # thr_idx = np.argmin(threshold_errors)
-        # return values[thr_idx], threshold_errors[thr_idx]
-
-        # TODO: space complexity is rather big. change?
-        # TODO: why is "product" imported
-        # ***TODO: should i put a threshold after all of them as well?***
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

@@ -138,8 +138,6 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig.update_yaxes(title_text="feature 2")
     fig.show()
 
-# TODO: color is opposite to them, is it a bug?
-
 
 if __name__ == '__main__':
     np.random.seed(0)

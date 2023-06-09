@@ -42,7 +42,6 @@ class AdaBoost(BaseEstimator):
         self.wl_ = wl
         self.iterations_ = iterations
         self.models_, self.weights_, self.D_ = None, None, None
-        # TODO: is D_ the dist after or before adjustment (I used the "after" version)
 
     def _fit(self, X: np.ndarray, y: np.ndarray) -> NoReturn:
         """
@@ -122,7 +121,7 @@ class AdaBoost(BaseEstimator):
         """
         predictions = np.zeros(len(X))
         for i in range(T):
-            predictions += self.weights_[i] * self.models_[i].predict(X)  # TODO: do i need to normalize the weights?
+            predictions += self.weights_[i] * self.models_[i].predict(X)
         return np.sign(predictions)
 
     def partial_loss(self, X: np.ndarray, y: np.ndarray, T: int) -> float:
