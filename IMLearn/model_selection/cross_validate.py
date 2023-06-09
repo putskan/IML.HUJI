@@ -37,4 +37,20 @@ def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
     validation_score: float
         Average validation score over folds
     """
-    raise NotImplementedError()
+    train_total_scores = 0
+    validation_total_scores = 0
+    val_size = len(y) // cv
+
+    for i in range(cv):
+        # TODO: is fitting twice ok?
+        # TODO: what about remainder of the data? (if not divisible by cv) (i used it for train)
+        val_indexes = np.arange(i * val_size, (i + 1) * val_size)
+        train_mask = np.ones_like(y, dtype=bool)
+        train_mask[val_indexes] = False
+        estimator = estimator.fit(X[train_mask], y[train_mask])
+        train_predictions = estimator.predict(X[train_mask])
+        val_predictions = estimator.predict(X[val_indexes])
+        train_total_scores += scoring(y[train_mask], train_predictions)
+        validation_total_scores += scoring(y[val_indexes], val_predictions)
+
+    return train_total_scores / cv, validation_total_scores / cv

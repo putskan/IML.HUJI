@@ -143,7 +143,6 @@ class DecisionStump(BaseEstimator):
 
         # TODO: space complexity is rather big. change?
         # TODO: why is "product" imported
-        # TODO: stopped here, it's slow. use cumsum somehow
         # ***TODO: should i put a threshold after all of them as well?***
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:

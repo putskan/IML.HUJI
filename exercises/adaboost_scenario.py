@@ -42,9 +42,6 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     (train_X, train_y), (test_X, test_y) = generate_data(train_size, noise), generate_data(test_size, noise)
 
     # Question 1: Train- and test errors of AdaBoost in noiseless case
-
-    # TODO: how is it noiseless if noise is used above?
-
     model = AdaBoost(DecisionStump, n_learners).fit(train_X, train_y)
     train_loss = []
     test_loss = []
@@ -54,12 +51,12 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
         test_loss.append(model.partial_loss(test_X, test_y, t))
 
     go.Figure([
-        go.Scatter(x=t_values, y=train_loss),
-        go.Scatter(x=t_values, y=test_loss),
-    ]).show()
-
-    # TODO: add meaningful axis, labels, etc
-
+        go.Scatter(x=t_values, y=train_loss, name='train'),
+        go.Scatter(x=t_values, y=test_loss, name='test'),
+    ],
+        layout=dict(xaxis_title='number of learners', yaxis_title='error',
+                    title=f'Adaboost Error as a Function of Number of Learners (noise={noise})'),
+    ).show()
 
     # Question 2: Plotting decision surfaces
     T = [5, 50, 100, 250]
@@ -70,7 +67,6 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                         )
 
     markers = np.array(['circle', 'x'])
-
     for i, t in enumerate(T):
         fig.add_trace(decision_surface(lambda X: model.partial_predict(X, t),
                                     xrange=lims[0], yrange=lims[1],
@@ -87,7 +83,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                       )
     fig.update_layout(
         margin=dict(t=80, b=50),
-        title_text='Test set & decision boundaries per ensemble size T',
+        title_text=f'Test set & decision boundaries per ensemble size T (noise={noise})',
         height=1000, width=1000,
     )
     fig.update_xaxes(title_text="feature 1")
@@ -95,10 +91,11 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig.show()
 
     # Question 3: Decision surface of best performing ensemble
+    # TODO: redundant. was already calculated
     losses = [model.partial_loss(test_X, test_y, t) for t in range(1, n_learners + 1)]
     best_loss_idx = np.argmin(losses)
     best_t = best_loss_idx + 1
-    best_t_acc = 1 - losses[best_loss_idx]
+    best_t_acc = np.round(1 - losses[best_loss_idx], 3)
 
     fig = go.Figure()
     fig.add_trace(decision_surface(lambda X: model.partial_predict(X, best_t),
@@ -115,14 +112,14 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig.update_layout(
         margin=dict(t=80, b=50),
         title_text=f'Best model - ensemble size: {best_t}, '
-                   f'accuracy: {best_t_acc}'
+                   f'accuracy: {best_t_acc} (noise={noise})'
     )
     fig.update_xaxes(title_text="feature 1")
     fig.update_yaxes(title_text="feature 2")
     fig.show()
 
     # Question 4: Decision surface with weighted samples
-    marker_size = model.D_[-1] / np.max(model.D_[-1]) * 5  # TODO: is seems slightly different... even on x20
+    marker_size = model.D_ / np.max(model.D_) * 25
     fig = go.Figure()
     fig.add_trace(decision_surface(lambda X: model.predict(X),
                                 xrange=lims[0], yrange=lims[1],
@@ -137,20 +134,16 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                   )
     fig.update_layout(
         margin=dict(t=80, b=50),
-        title_text=f'Weighted train set (by final D) & model decision boundary'
+        title_text=f'Weighted train set (by final D) & model decision boundary (noise={noise})'
     )
     fig.update_xaxes(title_text="feature 1")
     fig.update_yaxes(title_text="feature 2")
     fig.show()
-
-
-    raise NotImplementedError()
 
 # TODO: color is opposite to them, is it a bug?
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-
-    # TODO: change
-    fit_and_evaluate_adaboost(0.)
+    for noise in [0., 0.4]:
+        fit_and_evaluate_adaboost(noise)
