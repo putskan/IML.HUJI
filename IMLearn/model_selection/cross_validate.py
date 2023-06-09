@@ -40,14 +40,13 @@ def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
     train_total_scores = 0
     validation_total_scores = 0
     val_size = len(y) // cv
+    original_estimator = estimator
 
     for i in range(cv):
-        # TODO: is fitting twice ok?
-        # TODO: what about remainder of the data? (if not divisible by cv) (i used it for train)
         val_indexes = np.arange(i * val_size, (i + 1) * val_size)
         train_mask = np.ones_like(y, dtype=bool)
         train_mask[val_indexes] = False
-        estimator = estimator.fit(X[train_mask], y[train_mask])
+        estimator = deepcopy(original_estimator).fit(X[train_mask], y[train_mask])
         train_predictions = estimator.predict(X[train_mask])
         val_predictions = estimator.predict(X[val_indexes])
         train_total_scores += scoring(y[train_mask], train_predictions)

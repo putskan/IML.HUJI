@@ -60,18 +60,17 @@ class RidgeRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        # TODO: if lamda = 0 use linear regression? or assume won't be called?
+        lam = self.lam_
+        if lam == 0:
+            lam += 1e-12
+
         eye = np.eye(X.shape[1])
         if self.include_intercept_:
             X = np.hstack((np.ones((len(X), 1)), X))
             eye = np.eye(X.shape[1])
             eye[0, 0] = 0
 
-        # TODO: divide something by 2?
-        self.coefs_ = np.linalg.inv(X.T @ X + eye * self.lam_) @ X.T @ y
-
-        # TODO: lasso convergence warning
-
+        self.coefs_ = np.linalg.inv(X.T @ X + eye * lam) @ X.T @ y
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -91,7 +90,6 @@ class RidgeRegression(BaseEstimator):
             X = np.hstack((np.ones((len(X), 1)), X))
 
         return X @ self.coefs_
-
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """

@@ -91,11 +91,9 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
     fig.show()
 
     # Question 3: Decision surface of best performing ensemble
-    # TODO: redundant. was already calculated
-    losses = [model.partial_loss(test_X, test_y, t) for t in range(1, n_learners + 1)]
-    best_loss_idx = np.argmin(losses)
+    best_loss_idx = np.argmin(test_loss)
     best_t = best_loss_idx + 1
-    best_t_acc = np.round(1 - losses[best_loss_idx], 3)
+    best_t_acc = np.round(1 - test_loss[best_loss_idx], 3)
 
     fig = go.Figure()
     fig.add_trace(decision_surface(lambda X: model.partial_predict(X, best_t),
@@ -107,7 +105,7 @@ def fit_and_evaluate_adaboost(noise, n_learners=250, train_size=5000, test_size=
                              mode="markers",
                               marker_color='black',
                               marker_symbol=markers[(test_y > 0).astype(int)],
-                              marker_size=6),
+                              marker_size=11),
                   )
     fig.update_layout(
         margin=dict(t=80, b=50),

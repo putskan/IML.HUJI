@@ -56,39 +56,16 @@ class AdaBoost(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-
-        # TODO: DELETE?
-        # self.models_, self.weights_, self.D_ = [], np.zeros(self.iterations_), np.ones(len(y), dtype=np.float64) / len(y)
-        # for i in range(0, self.iterations_):
-        #     # Fit a new weak learner on given data, weighted according to current distribution
-        #     self.models_.append(self.wl_().fit(X, y * self.D_))
-        #
-        #     # Calculate learner's weight
-        #     y_pred = self.models_[-1].predict(X)
-        #     epsilon = np.sum(self.D_[y != y_pred])
-        #     self.weights_[i] = .5 * np.log(1. / epsilon - 1)
-        #
-        #     # Adjust samples' distribution
-        #     self.D_ *= np.exp(-y_pred * y * self.weights_[i])
-        #     self.D_ /= np.sum(self.D_)
-        #
-
-
         self.models_, self.weights_= [], []
         self.D_ = np.ones_like(y) / len(y)
         for i in range(self.iterations_):
-            # TODO: delete v
-            sample_indexes = np.random.choice(np.arange(len(y)), len(y), p=self.D_)
-            self.models_.append(self.wl_().fit(X[sample_indexes], y[sample_indexes]))
-            # self.models_.append(self.wl_().fit(X, y * self.D_))  # TODO: change to this
-
+            self.models_.append(self.wl_().fit(X, y * self.D_))
             predictions = self.models_[i].predict(X)
             eps = np.sum(self.D_ * (predictions != y))
             self.weights_.append(0.5 * np.log(1 / eps - 1))
             self.D_ = self.D_ * np.exp(-self.weights_[i] * y * predictions)
             self.D_ /= self.D_.sum()
             self.D_ = self.D_
-            # TODO: mine is relatively slower. understand why
 
     def _predict(self, X):
         """
