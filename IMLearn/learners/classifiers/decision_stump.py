@@ -127,8 +127,12 @@ class DecisionStump(BaseEstimator):
         threshold_errors = (ones_pre_threshold + minus_ones_post_threshold) / len(labels)
         best_thr_idx = np.argmin(threshold_errors)
         values[0] = -np.inf
-        return values[best_thr_idx], threshold_errors[best_thr_idx]
 
+        float_inf_error = (np.sign(labels) == sign).mean()
+        if threshold_errors[best_thr_idx] > float_inf_error:
+            return float('inf'), float_inf_error
+
+        return values[best_thr_idx], threshold_errors[best_thr_idx]
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
