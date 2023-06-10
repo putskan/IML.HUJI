@@ -51,14 +51,12 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     """
     # Question 1 - Load diabetes dataset and split into training and testing portions
     X, y = datasets.load_diabetes(return_X_y=True)
-    indexes = np.arange(len(X))
-    np.random.shuffle(indexes)
-    train_X, train_y = X[indexes[:50]], y[indexes[:50]]
-    test_X, test_y = X[indexes[50:]], y[indexes[50:]]
+    train_X, train_y = X[:50], y[:50]
+    test_X, test_y = X[50:], y[50:]
 
     # Question 2 - Perform CV for different values of the regularization parameter for Ridge and Lasso regressions
-    lambdas_ridge = np.linspace(1e-12, 0.2, n_evaluations)
-    lambdas_lasso = np.linspace(0.1, 0.5, n_evaluations)
+    lambdas_ridge = np.linspace(0, 0.3, n_evaluations)
+    lambdas_lasso = np.linspace(0, 1.1, n_evaluations)
     ridge_loss_train, ridge_loss_val = [], []
     lasso_loss_train, lasso_loss_val = [], []
     for reg_term in lambdas_ridge:
