@@ -40,22 +40,14 @@ class DecisionStump(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        best_thr = None
         best_thr_err = float('inf')
-        best_thr_sign = None
-        best_thr_feature_idx = None
-
         for feature_idx in range(X.shape[1]):
-            (best_thr, best_thr_err), best_thr_sign, best_thr_feature_idx = \
+            (self.threshold_, best_thr_err), self.sign_, self.j_ = \
                 min([
-                    (self._find_threshold(X[:, feature_idx], y, 1), 1, feature_idx),
+                    ((self.threshold_, best_thr_err), self.sign_, self.j_),
                     (self._find_threshold(X[:, feature_idx], y, -1), -1, feature_idx),
-                    ((best_thr, best_thr_err), best_thr_sign, best_thr_feature_idx),
+                    (self._find_threshold(X[:, feature_idx], y, 1), 1, feature_idx),
                 ], key=lambda x: x[0][1])
-
-        self.threshold_ = best_thr
-        self.j_ = best_thr_feature_idx
-        self.sign_ = best_thr_sign
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
