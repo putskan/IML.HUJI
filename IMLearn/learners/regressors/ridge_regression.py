@@ -60,17 +60,16 @@ class RidgeRegression(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.include_intercept_`
         """
-        lam = self.lam_
-        if lam == 0:
-            lam += 1e-12
-
         eye = np.eye(X.shape[1])
         if self.include_intercept_:
             X = np.hstack((np.ones((len(X), 1)), X))
             eye = np.eye(X.shape[1])
             eye[0, 0] = 0
 
-        self.coefs_ = np.linalg.inv(X.T @ X + eye * lam) @ X.T @ y
+        if self.lam_ != 0:
+            self.coefs_ = np.linalg.inv(X.T @ X + eye * self.lam_) @ X.T @ y
+        else:
+            self.coefs_ = np.linalg.pinv(X) @ y
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """

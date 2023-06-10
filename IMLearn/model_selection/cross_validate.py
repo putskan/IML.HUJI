@@ -39,17 +39,16 @@ def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
     """
     train_total_scores = 0
     validation_total_scores = 0
-    val_size = len(y) // cv
     original_estimator = estimator
 
-    for i in range(cv):
-        val_indexes = np.arange(i * val_size, (i + 1) * val_size)
+    folds = np.array_split(np.arange(len(X)), cv)
+    for fold in folds:
         train_mask = np.ones_like(y, dtype=bool)
-        train_mask[val_indexes] = False
+        train_mask[fold] = False
         estimator = deepcopy(original_estimator).fit(X[train_mask], y[train_mask])
         train_predictions = estimator.predict(X[train_mask])
-        val_predictions = estimator.predict(X[val_indexes])
+        val_predictions = estimator.predict(X[fold])
         train_total_scores += scoring(y[train_mask], train_predictions)
-        validation_total_scores += scoring(y[val_indexes], val_predictions)
+        validation_total_scores += scoring(y[fold], val_predictions)
 
     return train_total_scores / cv, validation_total_scores / cv
