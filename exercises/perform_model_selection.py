@@ -93,6 +93,7 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     print('lasso error: ', lasso_error)
     print('ols error: ', ols_error)
 
+
 if __name__ == '__main__':
     np.random.seed(0)
     select_regularization_parameter()

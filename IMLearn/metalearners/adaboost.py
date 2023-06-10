@@ -55,7 +55,7 @@ class AdaBoost(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        self.models_, self.weights_= [], []
+        self.models_, self.weights_ = [], []
         self.D_ = np.ones_like(y) / len(y)
         for i in range(self.iterations_):
             self.models_.append(self.wl_().fit(X, y * self.D_))
