@@ -108,22 +108,25 @@ class DecisionStump(BaseEstimator):
         values = values[sorted_indexes]
         labels = labels[sorted_indexes] * sign
 
-        indexes = np.arange(len(labels))
-        cumsum = np.cumsum(labels)
-        # minus labels, to exclude threshold idx itself
-        ones_pre_threshold = (indexes + cumsum - labels) / 2
-        minus_ones_pre_threshold = indexes - ones_pre_threshold
-        total_minus_ones = (len(labels) - cumsum[-1]) / 2
-        minus_ones_post_threshold = total_minus_ones - minus_ones_pre_threshold
+        values = np.concatenate(([-np.inf], values, [np.inf]))
+        labels = np.concatenate(([0], labels, [0]))
 
-        threshold_errors = (ones_pre_threshold + minus_ones_post_threshold) / len(labels)
-        best_thr_idx = np.argmin(threshold_errors)
-        float_inf_error = labels[labels > 0].sum() / len(labels)  # TODO: fix
-        if threshold_errors[best_thr_idx] > float_inf_error:
-            return float('inf'), float_inf_error
+        positive_labels = labels.copy()
+        positive_labels[positive_labels < 0] = 0
 
-        return values[best_thr_idx] if best_thr_idx != 0 else float('-inf'), \
-               threshold_errors[best_thr_idx]
+        negative_labels = labels.copy()
+        negative_labels[negative_labels > 0] = 0
+        negative_labels *= -1
+
+        cumsum_neg = np.cumsum(negative_labels)
+        cumsum_pos = np.cumsum(positive_labels)
+
+        type_one_errors = cumsum_pos - positive_labels
+        type_two_errors = cumsum_neg[-1] - cumsum_neg + negative_labels
+
+        errors = (type_one_errors + type_two_errors) / len(values)
+        idx_best = np.argmin(errors)
+        return values[idx_best], errors[idx_best]
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
