@@ -124,7 +124,7 @@ class DecisionStump(BaseEstimator):
         type_one_errors = cumsum_pos - positive_labels
         type_two_errors = cumsum_neg[-1] - cumsum_neg + negative_labels
 
-        errors = (type_one_errors + type_two_errors) / len(values)
+        errors = (type_one_errors + type_two_errors) / len(sorted_indexes)
         idx_best = np.argmin(errors)
         return values[idx_best], errors[idx_best]
 
