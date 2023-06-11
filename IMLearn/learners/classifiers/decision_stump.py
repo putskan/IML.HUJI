@@ -118,7 +118,7 @@ class DecisionStump(BaseEstimator):
 
         threshold_errors = (ones_pre_threshold + minus_ones_post_threshold) / len(labels)
         best_thr_idx = np.argmin(threshold_errors)
-        float_inf_error = (np.sign(labels) == sign).mean()
+        float_inf_error = labels[labels > 0].sum() / len(labels)  # TODO: fix
         if threshold_errors[best_thr_idx] > float_inf_error:
             return float('inf'), float_inf_error
 

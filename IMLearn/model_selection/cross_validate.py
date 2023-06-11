@@ -40,7 +40,7 @@ def cross_validate(estimator: BaseEstimator, X: np.ndarray, y: np.ndarray,
     train_total_scores = 0
     validation_total_scores = 0
     original_estimator = estimator
-
+    # adding shuffle here creates noise in reg param comparison. removed for clarity
     folds = np.array_split(np.arange(len(X)), cv)
     for fold in folds:
         train_mask = np.ones_like(y, dtype=bool)

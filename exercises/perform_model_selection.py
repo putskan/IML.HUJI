@@ -51,8 +51,8 @@ def select_regularization_parameter(n_samples: int = 50, n_evaluations: int = 50
     """
     # Question 1 - Load diabetes dataset and split into training and testing portions
     X, y = datasets.load_diabetes(return_X_y=True)
-    train_X, train_y = X[:50], y[:50]
-    test_X, test_y = X[50:], y[50:]
+    train_X, train_y = X[:n_samples], y[:n_samples]
+    test_X, test_y = X[n_samples:], y[n_samples:]
 
     # Question 2 - Perform CV for different values of the regularization parameter for Ridge and Lasso regressions
     lambdas_ridge = np.linspace(0, 0.3, n_evaluations)
