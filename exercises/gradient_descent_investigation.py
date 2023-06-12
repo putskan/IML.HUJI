@@ -57,7 +57,7 @@ def plot_descent_path(module: Type[BaseModule],
                       go.Scatter(x=descent_path[:, 0], y=descent_path[:, 1], mode="markers+lines", marker_color="black")],
                      layout=go.Layout(xaxis=dict(range=xrange),
                                       yaxis=dict(range=yrange),
-                                      title=f"GD Descent Path {title}"))
+                                      title=f"Gradient Descent Path {title}"))
 
 
 def get_gd_state_recorder_callback() -> Tuple[Callable[[], None], List[np.ndarray], List[np.ndarray]]:
@@ -182,9 +182,10 @@ def fit_logistic_regression():
             xaxis=dict(title=r"$\text{False Positive Rate (FPR)}$"),
             yaxis=dict(title=r"$\text{True Positive Rate (TPR)}$"))).show()  # TODO: clean this function
 
+    # TODO: think what such small alpha mean
     optimal_threshold = thresholds[np.argmax(tpr - fpr)]
     logistic_reg.alpha_ = optimal_threshold  # TODO: legit? or re-fit instead
-    print(f'No reg: optimal alpha: {np.round(optimal_threshold, 5)}, loss: {np.round(logistic_reg.loss(X_test, y_test), 2)}')
+    print(f'No reg: optimal alpha: {np.round(optimal_threshold, 4)}, loss: {np.round(logistic_reg.loss(X_test, y_test), 2)}')
 
 
     # Fitting l1- and l2-regularized logistic regression models, using cross-validation to specify values
@@ -205,6 +206,9 @@ def fit_logistic_regression():
 
 if __name__ == '__main__':
     np.random.seed(0)
-    # compare_fixed_learning_rates()  # TODO: uncomment
+    compare_fixed_learning_rates()  # TODO: uncomment
     # compare_exponential_decay_rates()  # TODO: not needed right?
-    fit_logistic_regression()
+    fit_logistic_regression()  # TODO: should it take that time?
+    # TODO: different values in plots
+    # TODO: also, Module L2 - lowest loss: 0.0, lowest lr: 0.1, is perhaps wrong (though makes sense...)
+    # TODO: CV randomization?
