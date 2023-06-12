@@ -9,6 +9,9 @@ from IMLearn.learners.classifiers.logistic_regression import LogisticRegression
 from IMLearn.utils import split_train_test
 
 import plotly.graph_objects as go
+from sklearn import metrics as sklearn_metrics
+from IMLearn.model_selection.cross_validate import cross_validate
+from IMLearn.metrics import misclassification_error
 
 
 def plot_descent_path(module: Type[BaseModule],
@@ -73,13 +76,48 @@ def get_gd_state_recorder_callback() -> Tuple[Callable[[], None], List[np.ndarra
     weights: List[np.ndarray]
         Recorded parameters
     """
-    raise NotImplementedError()
+    # TODO: should i pull from git?
+    # TODO: like so?
+    values = []
+    weights = []
+
+    def callback(**kwargs):
+        values.append(kwargs['val'])
+        weights.append(kwargs['weights'])
+
+    return callback, values, weights
 
 
 def compare_fixed_learning_rates(init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
                                  etas: Tuple[float] = (1, .1, .01, .001)):
-    raise NotImplementedError()
+    # TODO: should be implemented?
 
+
+    for module in [L1, L2]:
+        fig = go.Figure(
+            layout=dict(title=f'{module.__name__} value as a function of number of GD iterations',
+                        xaxis_title='iteration', yaxis_title='objective function'))
+
+        lowest_loss = np.inf
+        lowest_lr = None
+        for lr in etas:
+            callback, values, weights = get_gd_state_recorder_callback()
+            gradient_descent = GradientDescent(FixedLR(lr), callback=callback)
+            # TODO: why is this copy needed?
+            gradient_descent.fit(module(init.copy()), None, None)  # TODO: None, None?
+            plot_descent_path(module, np.array(weights),
+                              title=f'lr {lr}, module: {module.__name__}').show()
+            fig.add_trace(go.Scatter(x=np.arange(len(values)), y=values,
+                                     name=f'{module.__name__} - lr {lr}'))
+
+            curr_min_loss = np.min(values)
+            if curr_min_loss < lowest_loss:
+                lowest_loss = curr_min_loss
+                lowest_lr = lr
+
+        print(f'Module {module.__name__} - lowest loss: {np.round(lowest_loss, 4)}, lowest lr: {lowest_lr}')
+
+        fig.show()
 
 def compare_exponential_decay_rates(init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
                                     eta: float = .1,
@@ -129,17 +167,44 @@ def load_data(path: str = "../datasets/SAheart.data", train_portion: float = .8)
 def fit_logistic_regression():
     # Load and split SA Heard Disease dataset
     X_train, y_train, X_test, y_test = load_data()
+    # TODO: anything else ^ ?
 
     # Plotting convergence rate of logistic regression over SA heart disease data
-    raise NotImplementedError()
+    X_train, y_train, X_test, y_test = X_train.to_numpy(), y_train.to_numpy(), X_test.to_numpy(), y_test.to_numpy()
+    logistic_reg = LogisticRegression().fit(X_train, y_train)
+    fpr, tpr, thresholds = sklearn_metrics.roc_curve(y_test, logistic_reg.predict_proba(X_test))  # TODO: use x_test right?
+
+    go.Figure(
+        data=[go.Scatter(x=fpr, y=tpr, mode='markers+lines', text=thresholds,
+                         showlegend=False, marker_size=5)],
+        layout=go.Layout(
+            title='Logistic Regression ROC Curve',
+            xaxis=dict(title=r"$\text{False Positive Rate (FPR)}$"),
+            yaxis=dict(title=r"$\text{True Positive Rate (TPR)}$"))).show()  # TODO: clean this function
+
+    optimal_threshold = thresholds[np.argmax(tpr - fpr)]
+    logistic_reg.alpha_ = optimal_threshold  # TODO: legit? or re-fit instead
+    print(f'No reg: optimal alpha: {np.round(optimal_threshold, 5)}, loss: {np.round(logistic_reg.loss(X_test, y_test), 2)}')
+
 
     # Fitting l1- and l2-regularized logistic regression models, using cross-validation to specify values
     # of regularization parameter
-    raise NotImplementedError()
+    for penalty in ['l1', 'l2']:
+        best_loss, best_lam = np.inf, None
+        for lam in [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1]:
+            solver = GradientDescent(learning_rate=FixedLR(1e-4), max_iter=20_000)
+            model = LogisticRegression(penalty=penalty, solver=solver, lam=lam)
+            _, loss = cross_validate(model, X_train, y_train, scoring=misclassification_error)  # TODO: import is legit right?
+            if loss < best_loss:
+                best_lam = lam
+                best_loss = loss
+
+        loss = LogisticRegression(penalty=penalty, solver=solver, lam=lam).fit(X_train, y_train).loss(X_test, y_test)
+        print(f'{penalty}: best lambda {best_lam}, test misclassification error: {np.round(loss, 2)}')
 
 
 if __name__ == '__main__':
     np.random.seed(0)
-    compare_fixed_learning_rates()
-    compare_exponential_decay_rates()
+    # compare_fixed_learning_rates()  # TODO: uncomment
+    # compare_exponential_decay_rates()  # TODO: not needed right?
     fit_logistic_regression()
