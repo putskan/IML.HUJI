@@ -76,8 +76,6 @@ def get_gd_state_recorder_callback() -> Tuple[Callable[[], None], List[np.ndarra
     weights: List[np.ndarray]
         Recorded parameters
     """
-    # TODO: should i pull from git?
-    # TODO: like so?
     values = []
     weights = []
 
@@ -90,8 +88,6 @@ def get_gd_state_recorder_callback() -> Tuple[Callable[[], None], List[np.ndarra
 
 def compare_fixed_learning_rates(init: np.ndarray = np.array([np.sqrt(2), np.e / 3]),
                                  etas: Tuple[float] = (1, .1, .01, .001)):
-    # TODO: should be implemented?
-
 
     for module in [L1, L2]:
         fig = go.Figure(
@@ -103,8 +99,7 @@ def compare_fixed_learning_rates(init: np.ndarray = np.array([np.sqrt(2), np.e /
         for lr in etas:
             callback, values, weights = get_gd_state_recorder_callback()
             gradient_descent = GradientDescent(FixedLR(lr), callback=callback)
-            # TODO: why is this copy needed?
-            gradient_descent.fit(module(init.copy()), None, None)  # TODO: None, None?
+            gradient_descent.fit(module(init.copy()), None, None)
             plot_descent_path(module, np.array(weights),
                               title=f'lr {lr}, module: {module.__name__}').show()
             fig.add_trace(go.Scatter(x=np.arange(len(values)), y=values,
@@ -167,12 +162,11 @@ def load_data(path: str = "../datasets/SAheart.data", train_portion: float = .8)
 def fit_logistic_regression():
     # Load and split SA Heard Disease dataset
     X_train, y_train, X_test, y_test = load_data()
-    # TODO: anything else ^ ?
 
     # Plotting convergence rate of logistic regression over SA heart disease data
     X_train, y_train, X_test, y_test = X_train.to_numpy(), y_train.to_numpy(), X_test.to_numpy(), y_test.to_numpy()
     logistic_reg = LogisticRegression().fit(X_train, y_train)
-    fpr, tpr, thresholds = sklearn_metrics.roc_curve(y_test, logistic_reg.predict_proba(X_test))  # TODO: use x_test right?
+    fpr, tpr, thresholds = sklearn_metrics.roc_curve(y_train, logistic_reg.predict_proba(X_train))
 
     go.Figure(
         data=[go.Scatter(x=fpr, y=tpr, mode='markers+lines', text=thresholds,
@@ -180,12 +174,11 @@ def fit_logistic_regression():
         layout=go.Layout(
             title='Logistic Regression ROC Curve',
             xaxis=dict(title=r"$\text{False Positive Rate (FPR)}$"),
-            yaxis=dict(title=r"$\text{True Positive Rate (TPR)}$"))).show()  # TODO: clean this function
+            yaxis=dict(title=r"$\text{True Positive Rate (TPR)}$"))).show()
 
-    # TODO: think what such small alpha mean
     optimal_threshold = thresholds[np.argmax(tpr - fpr)]
-    logistic_reg.alpha_ = optimal_threshold  # TODO: legit? or re-fit instead
-    print(f'No reg: optimal alpha: {np.round(optimal_threshold, 4)}, loss: {np.round(logistic_reg.loss(X_test, y_test), 2)}')
+    logistic_reg.alpha_ = optimal_threshold
+    print(f'No reg: optimal alpha: {np.round(optimal_threshold, 4)}, test loss: {np.round(logistic_reg.loss(X_test, y_test), 2)}')
 
 
     # Fitting l1- and l2-regularized logistic regression models, using cross-validation to specify values
@@ -195,7 +188,7 @@ def fit_logistic_regression():
         for lam in [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1]:
             solver = GradientDescent(learning_rate=FixedLR(1e-4), max_iter=20_000)
             model = LogisticRegression(penalty=penalty, solver=solver, lam=lam)
-            _, loss = cross_validate(model, X_train, y_train, scoring=misclassification_error)  # TODO: import is legit right?
+            _, loss = cross_validate(model, X_train, y_train, scoring=misclassification_error)
             if loss < best_loss:
                 best_lam = lam
                 best_loss = loss
@@ -206,9 +199,7 @@ def fit_logistic_regression():
 
 if __name__ == '__main__':
     np.random.seed(0)
-    compare_fixed_learning_rates()  # TODO: uncomment
-    # compare_exponential_decay_rates()  # TODO: not needed right?
-    fit_logistic_regression()  # TODO: should it take that time?
-    # TODO: different values in plots
-    # TODO: also, Module L2 - lowest loss: 0.0, lowest lr: 0.1, is perhaps wrong (though makes sense...)
+    compare_fixed_learning_rates()
+    # compare_exponential_decay_rates()
+    fit_logistic_regression()
     # TODO: CV randomization?

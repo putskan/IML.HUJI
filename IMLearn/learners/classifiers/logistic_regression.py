@@ -92,16 +92,17 @@ class LogisticRegression(BaseEstimator):
         if self.include_intercept_:
             X = np.hstack((np.ones((n_samples, 1)), X))
 
+        weights = np.random.randn(n_features + self.include_intercept_) / np.sqrt(n_features + self.include_intercept_)  # TODO: do i need to increase size on intercept, but on X, i shouldnt? (happens inside)
+
         if self.penalty_ == 'l1':
             f = RegularizedModule(LogisticModule(), L1(), self.lam_,
-                                  include_intercept=self.include_intercept_)  # TODO: pass here twice the weights?
+                                  weights, self.include_intercept_)
         elif self.penalty_ == 'l2':
             f = RegularizedModule(LogisticModule(), L2(), self.lam_,
-                                  include_intercept=self.include_intercept_)  # TODO: pass here twice the weights?
+                                  weights, self.include_intercept_)
         else:
-            f = LogisticModule()
+            f = LogisticModule(weights)
 
-        f.weights = np.random.randn(n_features + self.include_intercept_) / n_features  # TODO: do i need to increase size on intercept, but on X, i shouldnt? (happens inside)
         self.coefs_ = self.solver_.fit(f, X, y)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
@@ -118,7 +119,7 @@ class LogisticRegression(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        return self.predict_proba(X) > self.alpha_  # TODO: should the classes be -1, 1 or 1, 0
+        return self.predict_proba(X) >= self.alpha_
 
     def predict_proba(self, X: np.ndarray) -> np.ndarray:
         """
@@ -134,7 +135,7 @@ class LogisticRegression(BaseEstimator):
         probabilities: ndarray of shape (n_samples,)
             Probability of each sample being classified as `1` according to the fitted model
         """
-        if self.include_intercept_:  # TODO: should be added here?
+        if self.include_intercept_:
             X = np.hstack((np.ones((len(X), 1)), X))
         return 1 / (1 + np.exp(-X @ self.coefs_))
 

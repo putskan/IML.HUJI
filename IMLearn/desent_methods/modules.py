@@ -155,7 +155,6 @@ class LogisticModule(BaseModule):
         output: ndarray of shape (n_features,)
             Derivative of function with respect to self.weights at point self.weights
         """
-        # TODO: validate + check if we did that in class
         g = 1 + np.exp(X @ self.weights)
         return np.sum((y - 1 + 1 / g)[:, np.newaxis] * X, axis=0) / -len(X)
 
@@ -199,7 +198,7 @@ class RegularizedModule(BaseModule):
         self.include_intercept_ = include_intercept
 
         if weights is not None:
-            self.weights = weights  # TODO: when and how to assign weights to the children base modules
+            self.weights = weights
 
     def compute_output(self, **kwargs) -> np.ndarray:
         """
@@ -215,13 +214,8 @@ class RegularizedModule(BaseModule):
         output: ndarray of shape (1,)
             Value of function at point self.weights
         """
-        # TODO: what should i change to support the interecept=True case?
-
-        # TODO: pass weights like so? kwarg?
         return self.fidelity_module_.compute_output(**kwargs) + \
                self.lam_ * self.regularization_module_.compute_output(**kwargs)
-
-        # TODO: when and how should i init weights?
 
     def compute_jacobian(self, **kwargs) -> np.ndarray:
         """
@@ -266,5 +260,4 @@ class RegularizedModule(BaseModule):
         """
         self.weights_ = weights
         self.fidelity_module_.weights = weights
-        self.regularization_module_.weights = weights[1:]
-        # TODO: currently i'm relying on weight assignment by this function. is it ok? + how do we use the weights in ctor? shouldnt pass to children too?
+        self.regularization_module_.weights = weights[1:] if self.include_intercept_ else weights

@@ -146,8 +146,8 @@ class GradientDescent:
             if delta <= self.tol_:
                 break
 
-            # TODO: return w based on the policy (avg, sum, etc.)
         ws = np.array([f.weights, w_best, w_sum / w_total])
         return ws[np.array(OUTPUT_VECTOR_TYPE) == self.out_type_][0]
     # TODO: test the different output vector options
+    # TODO: add to pdf that ||w|| are both convex (?)
     # TODO: in the plots, some of them are stuck on exactly the same number, without stopping
