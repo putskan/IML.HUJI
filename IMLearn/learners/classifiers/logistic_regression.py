@@ -92,7 +92,7 @@ class LogisticRegression(BaseEstimator):
         if self.include_intercept_:
             X = np.hstack((np.ones((n_samples, 1)), X))
 
-        weights = np.random.randn(n_features + self.include_intercept_) / np.sqrt(n_features + self.include_intercept_)  # TODO: do i need to increase size on intercept, but on X, i shouldnt? (happens inside)
+        weights = np.random.randn(n_features + self.include_intercept_) / np.sqrt(n_features + self.include_intercept_)
 
         if self.penalty_ == 'l1':
             f = RegularizedModule(LogisticModule(), L1(), self.lam_,

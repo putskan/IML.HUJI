@@ -119,20 +119,15 @@ class GradientDescent:
                 Euclidean norm of w^(t)-w^(t-1)
 
         """
-        # TODO: how to pass args to compute output
-        # TODO: call callback before break as well? after everything as well?
-        # TODO: including initial w in avg or not?
         w_sum = f.weights
-        w_total = 0
+        w_total = 1
         w_best = f.weights
         output_best = np.inf
 
         for t in range(self.max_iter_):
             w_total += 1
-            # TODO: use f.compute_output? maybe pass to compute_jacobian?
-            # TODO: pass something to compute jacobian?
             lr = self.learning_rate_.lr_step()
-            grad = f.compute_jacobian(X=X, y=y)  # like so?
+            grad = f.compute_jacobian(X=X, y=y)
             w = f.weights - lr * grad
             delta = np.linalg.norm(w - f.weights)
             f.weights = w
@@ -142,12 +137,9 @@ class GradientDescent:
                 output_best = output
                 w_best = w
             self.callback_(solver=self, weights=f.weights, val=output, grad=grad,
-                           t=t, eta=lr, delta=delta)  # TODO: how to pass args (docs is different than default callback
+                           t=t, eta=lr, delta=delta)
             if delta <= self.tol_:
                 break
 
         ws = np.array([f.weights, w_best, w_sum / w_total])
         return ws[np.array(OUTPUT_VECTOR_TYPE) == self.out_type_][0]
-    # TODO: test the different output vector options
-    # TODO: add to pdf that ||w|| are both convex (?)
-    # TODO: in the plots, some of them are stuck on exactly the same number, without stopping

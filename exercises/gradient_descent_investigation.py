@@ -202,4 +202,3 @@ if __name__ == '__main__':
     compare_fixed_learning_rates()
     # compare_exponential_decay_rates()
     fit_logistic_regression()
-    # TODO: CV randomization?
